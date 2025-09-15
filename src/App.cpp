@@ -12,12 +12,18 @@ bool App::Initialize(int width, int height, const std::string& title) {
 }
 
 void App::Run() {
-    const double fixedDelta = 1.0 / 60.0; // physics updates at 60hz
+    const double fixedDelta = 1.0 / 60.0; // fixed updates at 60hz
+    double accumulator = 0.0;
 
     while (isRunning) {
         auto currentFrameTime = Clock::now();
         std::chrono::duration<float> deltaTime = currentFrameTime - lastFrameTime;
         lastFrameTime = currentFrameTime;
+
+        while (accumulator >= fixedDelta) {
+            OnFixedUpdate(static_cast<float>(fixedDelta));
+            accumulator -= fixedDelta;
+        }
 
         // update
         OnUpdate(deltaTime.count());
