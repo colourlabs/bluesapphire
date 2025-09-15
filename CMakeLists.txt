@@ -5,8 +5,19 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(FetchContent)
+
+FetchContent_Declare(
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG        v1.15.3
+)
+
+FetchContent_MakeAvailable(spdlog)
+
 add_library(BlueSapphire STATIC
     src/App.cpp
+    src/utils/Logger.cpp
 )
 
 target_include_directories(BlueSapphire
@@ -21,4 +32,5 @@ if(BS_BUILD_TESTS)
     add_subdirectory(examples)
 endif()
 
+target_link_libraries(BlueSapphire PUBLIC spdlog::spdlog)
 target_compile_features(BlueSapphire PUBLIC cxx_std_20)
