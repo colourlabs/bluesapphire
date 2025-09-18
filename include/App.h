@@ -1,8 +1,9 @@
 #pragma once
 
 #include "AppSettings.h"
-#include "GLFW/glfw3.h"
+#include "Renderer/Shader.h"
 
+#include <GLFW/glfw3.h>
 #include <chrono>
 
 namespace BlueSapphire {
@@ -18,10 +19,12 @@ public:
     virtual void OnFixedUpdate(float dt) {}
 private:
     bool isRunning = false;
-    GLFWwindow *window = nullptr;
 
     using Clock = std::chrono::high_resolution_clock;
     Clock::time_point lastFrameTime;
+protected:
+    Renderer::Shader basicShader;
+    GLFWwindow *window = nullptr;
 };
 
 } // namespace BlueSapphire

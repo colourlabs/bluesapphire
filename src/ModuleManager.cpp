@@ -1,5 +1,5 @@
 #include "ModuleManager.h"
-#include "utils/Logger.h"
+#include "Utilities/Logger.h"
 
 namespace BlueSapphire {
 

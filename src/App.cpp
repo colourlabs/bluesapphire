@@ -1,9 +1,12 @@
+#include "Utilities/Logger.h"
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 #include "App.h"
 #include "AppSettings.h"
-#include "utils/Logger.h"
 #include "ModuleManager.h"
-
-#include <GLFW/glfw3.h>
+#include "Renderer/CameraModule.h"
 
 namespace BlueSapphire {
 
@@ -33,6 +36,11 @@ bool App::Initialize(const AppSettings& settings) {
 
     glfwMakeContextCurrent(window);
 
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        Utils::Logger::Get().error("Failed to initialize GLAD");
+        return false;
+    }
+
     if (settings.vsync) {
         glfwSwapInterval(1);
     } else {
@@ -41,6 +49,16 @@ bool App::Initialize(const AppSettings& settings) {
 
     lastFrameTime = Clock::now();
     isRunning = true;
+
+    if (!basicShader.LoadFromFile("shaders/basic.vertex.glsl", "shaders/basic.fragment.glsl")) {
+        Utils::Logger::Get().error("Failed to load basic shader");
+        return false;
+    }
+
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+    ModuleManager::Get().RegisterModule(std::make_unique<Renderer::CameraModule>());
 
     // startup all modules
     ModuleManager::Get().StartupAll();
@@ -54,6 +72,15 @@ void App::Run() {
     const double fixedDelta = 1.0 / 60.0; // fixed updates at 60hz
     double accumulator = 0.0;
 
+    auto cameraModule = std::dynamic_pointer_cast<BlueSapphire::Renderer::CameraModule>(
+        ModuleManager::Get().GetModule("CameraModule")
+    );
+
+    if (!cameraModule) {
+        Utils::Logger::Get().error("CameraModule not found or wrong type.");
+        return;
+    }
+
     while (isRunning && !glfwWindowShouldClose(window)) {
         glfwPollEvents();
 
@@ -66,6 +93,8 @@ void App::Run() {
             OnFixedUpdate(static_cast<float>(fixedDelta));
             accumulator -= fixedDelta;
         }
+
+        cameraModule->Update(deltaTime.count());
 
         // update
         OnUpdate(deltaTime.count());
