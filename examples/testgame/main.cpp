@@ -3,7 +3,6 @@
 #include "Renderer/CameraModule.h"
 #include "ModuleManager.h"
 #include "Renderer/Skybox.h"
-#include "Utilities/Logger.h"
 
 #include <iostream>
 
@@ -13,14 +12,14 @@ public:
     std::unique_ptr<BlueSapphire::Renderer::Skybox> skybox;
 
     std::vector<std::string> skyboxFaces = {
-        "assets/skybox/plainsky_right.jpg",
-        "assets/skybox/plainsky_left.jpg",
-        "assets/skybox/plainsky_up.jpg",
-        "assets/skybox/plainsky_down.jpg",
-        "assets/skybox/plainsky_front.jpg",
-        "assets/skybox/plainsky_back.jpg"
+        "assets/skybox/clouds1_east.jpg",
+        "assets/skybox/clouds1_west.jpg",  
+        "assets/skybox/clouds1_up.jpg",    
+        "assets/skybox/clouds1_down.jpg",   
+        "assets/skybox/clouds1_north.jpg",
+        "assets/skybox/clouds1_south.jpg" 
     };
-    
+
     void OnUpdate(float dt) override {
         float speed = 5.0f; // ups
 
@@ -28,12 +27,6 @@ public:
         glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
         glm::vec3 up = glm::vec3(0, 1, 0);
 
-        BlueSapphire::Utils::Logger::Get().info("Camera pos: ({}, {}, {})", 
-            cameraModule->camera.GetPosition().x,
-            cameraModule->camera.GetPosition().y,
-            cameraModule->camera.GetPosition().z
-        );
-    
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             cameraModule->camera.Move(forward * speed * dt);
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)

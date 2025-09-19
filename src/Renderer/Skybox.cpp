@@ -36,27 +36,27 @@ float skyboxVertices[] = {
     -50.0f,  50.0f,  50.0f,
 
     // right face (+X)
-        50.0f,  50.0f, -50.0f,
-        50.0f,  50.0f,  50.0f,
-        50.0f, -50.0f,  50.0f,
-        50.0f, -50.0f,  50.0f,
-        50.0f, -50.0f, -50.0f,
-        50.0f,  50.0f, -50.0f,
+    50.0f,  50.0f, -50.0f,
+    50.0f,  50.0f,  50.0f,
+    50.0f, -50.0f,  50.0f,
+    50.0f, -50.0f,  50.0f,
+    50.0f, -50.0f, -50.0f,
+    50.0f,  50.0f, -50.0f,
 
     // top face (+Y)
     -50.0f,  50.0f,  50.0f,
-    -50.0f,  50.0f, -50.0f,
-        50.0f,  50.0f, -50.0f,
-        50.0f,  50.0f, -50.0f,
-        50.0f,  50.0f,  50.0f,
+-50.0f,  50.0f, -50.0f,
+    50.0f,  50.0f, -50.0f,
+    50.0f,  50.0f, -50.0f,
+    50.0f,  50.0f,  50.0f,
     -50.0f,  50.0f,  50.0f,
 
     // bottom face (-Y)
-    -50.0f, -50.0f, -50.0f,
-    -50.0f, -50.0f,  50.0f,
-        50.0f, -50.0f,  50.0f,
-        50.0f, -50.0f,  50.0f,
-        50.0f, -50.0f, -50.0f,
+-50.0f, -50.0f, -50.0f,
+-50.0f, -50.0f,  50.0f,
+    50.0f, -50.0f,  50.0f,
+    50.0f, -50.0f,  50.0f,
+    50.0f, -50.0f, -50.0f,
     -50.0f, -50.0f, -50.0f
 };
 
@@ -72,7 +72,7 @@ Skybox::Skybox(const std::vector<std::string>& faces) {
     glGenBuffers(1, &vbo);
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), skyboxVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glBindVertexArray(0);
