@@ -34,6 +34,9 @@ FetchContent_MakeAvailable(glm)
 FetchContent_MakeAvailable(spdlog)
 FetchContent_MakeAvailable(glfw)
 
+# add lua
+add_subdirectory(vendor/lua)
+
 add_library(glad STATIC ${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad/glad.c)
 target_include_directories(glad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/vendor)
 set_target_properties(glad PROPERTIES
@@ -77,6 +80,7 @@ target_link_libraries(BlueSapphire
         glad
         OpenGL::GL
         glm::glm
+        lua
 )
 
 target_compile_features(BlueSapphire PUBLIC cxx_std_20)

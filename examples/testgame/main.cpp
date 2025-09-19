@@ -3,12 +3,15 @@
 #include "Renderer/CameraModule.h"
 #include "ModuleManager.h"
 #include "Renderer/Skybox.h"
+#include "ScriptingModule.h"
 
 #include <iostream>
 
 class TestGame : public BlueSapphire::App {
 public:
     std::shared_ptr<BlueSapphire::Renderer::CameraModule> cameraModule;
+    std::shared_ptr<BlueSapphire::ScriptingModule> scriptingModule;
+
     std::unique_ptr<BlueSapphire::Renderer::Skybox> skybox;
 
     std::vector<std::string> skyboxFaces = {
@@ -54,10 +57,22 @@ public:
             BlueSapphire::ModuleManager::Get().GetModule("CameraModule")
         );
 
+        scriptingModule = std::dynamic_pointer_cast<BlueSapphire::ScriptingModule>(
+            BlueSapphire::ModuleManager::Get().GetModule("ScriptingModule")
+        );
+
         if (!cameraModule) {
             std::cerr << "CameraModule not found!" << std::endl;
             return false;
+        } 
+
+        if (!scriptingModule) {
+            std::cerr << "ScriptingModule not found!" << std::endl;
+            return false;
         }
+
+        // load lua scripts
+        scriptingModule->LoadScript("scripts/init.lua");
 
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         if (glfwRawMouseMotionSupported())

@@ -1,3 +1,4 @@
+#include "ScriptingModule.h"
 #include "Utilities/Logger.h"
 
 #include <glad/glad.h>
@@ -58,6 +59,7 @@ bool App::Initialize(const AppSettings& settings) {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
+    ModuleManager::Get().RegisterModule(std::make_unique<ScriptingModule>());
     ModuleManager::Get().RegisterModule(std::make_unique<Renderer::CameraModule>());
 
     // startup all modules
@@ -72,14 +74,26 @@ void App::Run() {
     const double fixedDelta = 1.0 / 60.0; // fixed updates at 60hz
     double accumulator = 0.0;
 
-    auto cameraModule = std::dynamic_pointer_cast<BlueSapphire::Renderer::CameraModule>(
+    auto cameraModule = std::dynamic_pointer_cast<Renderer::CameraModule>(
         ModuleManager::Get().GetModule("CameraModule")
+    );
+
+    auto scriptingModule = std::dynamic_pointer_cast<ScriptingModule>(
+        ModuleManager::Get().GetModule("ScriptingModule")
     );
 
     if (!cameraModule) {
         Utils::Logger::Get().error("CameraModule not found or wrong type.");
         return;
     }
+
+    if (!scriptingModule) {
+        Utils::Logger::Get().error("ScriptingModule not found or wrong type.");
+        return;
+    }
+
+    scriptingModule->Bind("Engine", "App", this);
+    scriptingModule->Bind("Engine", "Camera", &cameraModule->camera);
 
     while (isRunning && !glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -98,9 +112,11 @@ void App::Run() {
 
         // update
         OnUpdate(deltaTime.count());
+        scriptingModule->Update(deltaTime.count());
 
         // render
         OnRender();
+        scriptingModule->Render();
 
         glfwSwapBuffers(window);
     }
