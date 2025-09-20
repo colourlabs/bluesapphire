@@ -1,7 +1,8 @@
+#include <glad/glad.h>
+
 #include "ScriptingModule.h"
 #include "Utilities/Logger.h"
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "App.h"
@@ -14,17 +15,6 @@ namespace BlueSapphire {
 
 bool App::Initialize(const AppSettings& settings) {
     Utils::Logger::Initialize();
-
-    // register keys
-    InputManager::Get().RegisterKey(GLFW_KEY_W);
-    InputManager::Get().RegisterKey(GLFW_KEY_A);
-    InputManager::Get().RegisterKey(GLFW_KEY_S);
-    InputManager::Get().RegisterKey(GLFW_KEY_D);
-    InputManager::Get().RegisterKey(GLFW_KEY_SPACE);
-    InputManager::Get().RegisterKey(GLFW_KEY_LEFT_SHIFT);
-    
-    InputManager::Get().RegisterMouseButton(GLFW_MOUSE_BUTTON_LEFT);
-    InputManager::Get().RegisterMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
 
     glfwSetErrorCallback([](int error, const char* desc) {
         Utils::Logger::Get().error("GLFW Error ({}): {}", error, desc);
@@ -70,6 +60,7 @@ bool App::Initialize(const AppSettings& settings) {
     }
 
     glEnable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     ModuleManager::Get().RegisterModule(std::make_unique<ScriptingModule>());
@@ -81,6 +72,16 @@ bool App::Initialize(const AppSettings& settings) {
     Utils::Logger::Get().info("Game application initialized: {} ({}x{})", settings.title, settings.width, settings.height);
     
     return true;
+}
+
+void App::SetCursorMode(bool enabled) {
+    if (enabled) {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    } else {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        if (glfwRawMouseMotionSupported())
+            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    }
 }
 
 void App::Run() {
@@ -105,7 +106,6 @@ void App::Run() {
         return;
     }
 
-    scriptingModule->Bind("Engine", "App", this);
     scriptingModule->Bind("Engine", "Camera", &cameraModule->camera);
 
     while (isRunning && !glfwWindowShouldClose(window)) {
@@ -128,6 +128,9 @@ void App::Run() {
         // update
         OnUpdate(deltaTime.count());
         scriptingModule->Update(deltaTime.count());
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        basicShader.Bind();
 
         // render
         OnRender();

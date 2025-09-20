@@ -14,6 +14,8 @@ public:
     void Run();
     void Shutdown();
 
+    void SetCursorMode(bool enabled);
+
     virtual void OnUpdate(float deltaTime) {}
     virtual void OnRender() {}
     virtual void OnFixedUpdate(float dt) {}

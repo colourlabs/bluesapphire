@@ -3,6 +3,7 @@
 #include "Renderer/CameraModule.h"
 #include "ModuleManager.h"
 #include "Renderer/Skybox.h"
+#include "Scene.h"
 #include "ScriptingModule.h"
 
 #include <iostream>
@@ -11,6 +12,7 @@ class TestGame : public BlueSapphire::App {
 public:
     std::shared_ptr<BlueSapphire::Renderer::CameraModule> cameraModule;
     std::shared_ptr<BlueSapphire::ScriptingModule> scriptingModule;
+    std::unique_ptr<BlueSapphire::Scene> scene;
 
     std::unique_ptr<BlueSapphire::Renderer::Skybox> skybox;
 
@@ -25,14 +27,70 @@ public:
 
     void OnUpdate(float dt) override {
         // this stuff runs every frame
+        if (scene) scene->Update(dt);
     }
 
-    bool Initialize(const BlueSapphire::AppSettings& settings) override {    
+    std::shared_ptr<BlueSapphire::Mesh> CreateCubeMesh() {
+        std::vector<BlueSapphire::Vertex> vertices = {
+            // positions             // normals           // tex coords
+            {{-0.5f, -0.5f, -0.5f}, {0.0f,  0.0f, -1.0f}, {0.0f, 0.0f}},
+            {{ 0.5f, -0.5f, -0.5f}, {0.0f,  0.0f, -1.0f}, {1.0f, 0.0f}},
+            {{ 0.5f,  0.5f, -0.5f}, {0.0f,  0.0f, -1.0f}, {1.0f, 1.0f}},
+            {{-0.5f,  0.5f, -0.5f}, {0.0f,  0.0f, -1.0f}, {0.0f, 1.0f}},
+    
+            {{-0.5f, -0.5f,  0.5f}, {0.0f,  0.0f,  1.0f}, {0.0f, 0.0f}},
+            {{ 0.5f, -0.5f,  0.5f}, {0.0f,  0.0f,  1.0f}, {1.0f, 0.0f}},
+            {{ 0.5f,  0.5f,  0.5f}, {0.0f,  0.0f,  1.0f}, {1.0f, 1.0f}},
+            {{-0.5f,  0.5f,  0.5f}, {0.0f,  0.0f,  1.0f}, {0.0f, 1.0f}},
+    
+            {{-0.5f,  0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}},
+            {{-0.5f,  0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}},
+            {{-0.5f, -0.5f, -0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}},
+            {{-0.5f, -0.5f,  0.5f}, {-1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}},
+    
+            {{ 0.5f,  0.5f,  0.5f}, {1.0f,  0.0f,  0.0f}, {1.0f, 0.0f}},
+            {{ 0.5f,  0.5f, -0.5f}, {1.0f,  0.0f,  0.0f}, {1.0f, 1.0f}},
+            {{ 0.5f, -0.5f, -0.5f}, {1.0f,  0.0f,  0.0f}, {0.0f, 1.0f}},
+            {{ 0.5f, -0.5f,  0.5f}, {1.0f,  0.0f,  0.0f}, {0.0f, 0.0f}},
+    
+            {{-0.5f, -0.5f, -0.5f}, {0.0f, -1.0f,  0.0f}, {0.0f, 1.0f}},
+            {{ 0.5f, -0.5f, -0.5f}, {0.0f, -1.0f,  0.0f}, {1.0f, 1.0f}},
+            {{ 0.5f, -0.5f,  0.5f}, {0.0f, -1.0f,  0.0f}, {1.0f, 0.0f}},
+            {{-0.5f, -0.5f,  0.5f}, {0.0f, -1.0f,  0.0f}, {0.0f, 0.0f}},
+    
+            {{-0.5f,  0.5f, -0.5f}, {0.0f,  1.0f,  0.0f}, {0.0f, 1.0f}},
+            {{ 0.5f,  0.5f, -0.5f}, {0.0f,  1.0f,  0.0f}, {1.0f, 1.0f}},
+            {{ 0.5f,  0.5f,  0.5f}, {0.0f,  1.0f,  0.0f}, {1.0f, 0.0f}},
+            {{-0.5f,  0.5f,  0.5f}, {0.0f,  1.0f,  0.0f}, {0.0f, 0.0f}}
+        };
+    
+        std::vector<unsigned int> indices = {
+            0, 1, 2, 2, 3, 0,        // back
+            4, 5, 6, 6, 7, 4,        // front
+            8, 9, 10, 10, 11, 8,     // left
+            12, 13, 14, 14, 15, 12,  // right
+            16, 17, 18, 18, 19, 16,  // bottom
+            20, 21, 22, 22, 23, 20   // top
+        };
+    
+        return std::make_shared<BlueSapphire::Mesh>(vertices, indices);
+    }
+
+    bool Initialize(const BlueSapphire::AppSettings& settings) override { 
+        BlueSapphire::InputManager::Get().RegisterKey(GLFW_KEY_W);
+        BlueSapphire::InputManager::Get().RegisterKey(GLFW_KEY_A);
+        BlueSapphire::InputManager::Get().RegisterKey(GLFW_KEY_S);
+        BlueSapphire::InputManager::Get().RegisterKey(GLFW_KEY_D);
+        BlueSapphire::InputManager::Get().RegisterKey(GLFW_KEY_SPACE);
+        BlueSapphire::InputManager::Get().RegisterKey(GLFW_KEY_LEFT_SHIFT);
+        
+        BlueSapphire::InputManager::Get().RegisterMouseButton(GLFW_MOUSE_BUTTON_LEFT);
+        BlueSapphire::InputManager::Get().RegisterMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
+        
         if (!BlueSapphire::App::Initialize(settings))
             return false;
 
-        lastX = settings.width / 2.0f;
-        lastY = settings.height / 2.0f;
+        SetCursorMode(false);
 
         skybox = std::make_unique<BlueSapphire::Renderer::Skybox>(skyboxFaces);
 
@@ -56,18 +114,27 @@ public:
 
         // load lua scripts
         scriptingModule->LoadScript("scripts/init.lua");
+    
+        scene = std::make_unique<BlueSapphire::Scene>();
 
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        if (glfwRawMouseMotionSupported())
-            glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+        auto cubeMesh = CreateCubeMesh();
+        auto cube = scene->CreateObject("Cube");
+        cube->position = glm::vec3(0.0f, 0.0f, 0.0f);
+
+        auto meshRenderer = cube->AddComponent<BlueSapphire::MeshRenderer>();
+        meshRenderer->SetMesh(cubeMesh);
+        meshRenderer->shader = std::shared_ptr<BlueSapphire::Renderer::Shader>(&basicShader, [](auto*){});
 
         return true;
     }
     
     void OnRender() override {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-        basicShader.Bind();
+        if (scene) {
+            scene->Render(
+                cameraModule->camera.GetViewMatrix(),
+                cameraModule->camera.GetProjectionMatrix()
+            );
+        }
 
         // draw skybox
         if (skybox)
@@ -75,10 +142,6 @@ public:
     }    
 
     void OnFixedUpdate(float dt) override {}
-
-private:
-    float lastX;
-    float lastY;
 };
     
 
