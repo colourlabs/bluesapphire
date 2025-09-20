@@ -7,13 +7,24 @@
 #include "App.h"
 #include "AppSettings.h"
 #include "ModuleManager.h"
+#include "InputManager.h"
 #include "Renderer/CameraModule.h"
 
 namespace BlueSapphire {
 
 bool App::Initialize(const AppSettings& settings) {
-    // TODO: initalize opengl and other stuff etc etc
     Utils::Logger::Initialize();
+
+    // register keys
+    InputManager::Get().RegisterKey(GLFW_KEY_W);
+    InputManager::Get().RegisterKey(GLFW_KEY_A);
+    InputManager::Get().RegisterKey(GLFW_KEY_S);
+    InputManager::Get().RegisterKey(GLFW_KEY_D);
+    InputManager::Get().RegisterKey(GLFW_KEY_SPACE);
+    InputManager::Get().RegisterKey(GLFW_KEY_LEFT_SHIFT);
+    
+    InputManager::Get().RegisterMouseButton(GLFW_MOUSE_BUTTON_LEFT);
+    InputManager::Get().RegisterMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
 
     glfwSetErrorCallback([](int error, const char* desc) {
         Utils::Logger::Get().error("GLFW Error ({}): {}", error, desc);
@@ -47,6 +58,8 @@ bool App::Initialize(const AppSettings& settings) {
     } else {
         glfwSwapInterval(0);
     }
+
+    InputManager::Get().Initialize(window);
 
     lastFrameTime = Clock::now();
     isRunning = true;
@@ -97,6 +110,8 @@ void App::Run() {
 
     while (isRunning && !glfwWindowShouldClose(window)) {
         glfwPollEvents();
+
+        InputManager::Get().Update();
 
         auto currentFrameTime = Clock::now();
         std::chrono::duration<float> deltaTime = currentFrameTime - lastFrameTime;

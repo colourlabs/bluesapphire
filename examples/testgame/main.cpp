@@ -24,24 +24,7 @@ public:
     };
 
     void OnUpdate(float dt) override {
-        float speed = 5.0f; // ups
-
-        glm::vec3 forward = cameraModule->camera.GetFront();
-        glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0, 1, 0)));
-        glm::vec3 up = glm::vec3(0, 1, 0);
-
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-            cameraModule->camera.Move(forward * speed * dt);
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-            cameraModule->camera.Move(-forward * speed * dt);
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-            cameraModule->camera.Move(-right * speed * dt);
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-            cameraModule->camera.Move(right * speed * dt);
-        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-            cameraModule->camera.Move(up * speed * dt);
-        if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-            cameraModule->camera.Move(-up * speed * dt);
+        // this stuff runs every frame
     }
 
     bool Initialize(const BlueSapphire::AppSettings& settings) override {    
@@ -78,29 +61,9 @@ public:
         if (glfwRawMouseMotionSupported())
             glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
-        glfwSetWindowUserPointer(window, this);
-        glfwSetCursorPosCallback(window, [](GLFWwindow* win, double xpos, double ypos) {
-            auto game = reinterpret_cast<TestGame*>(glfwGetWindowUserPointer(win));
-            static bool firstMouse = true;
-            static float lastX, lastY;
-
-            if (firstMouse) {
-                lastX = xpos;
-                lastY = ypos;
-                firstMouse = false;
-            }
-
-            float xoffset = xpos - lastX;
-            float yoffset = lastY - ypos; // reversed Y
-            lastX = xpos;
-            lastY = ypos;
-
-            game->cameraModule->camera.ProcessMouseMovement(xoffset, yoffset);
-        });
-
         return true;
     }
-
+    
     void OnRender() override {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
