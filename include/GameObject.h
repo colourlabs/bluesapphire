@@ -22,7 +22,7 @@ public:
 
     void Update(float dt) {
         for (auto& comp : components)
-            comp->Update(dt, this);
+            comp->Update(dt);
     }
 
     template<typename T, typename... Args>
@@ -30,6 +30,7 @@ public:
         static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
 
         auto comp = std::make_shared<T>(std::forward<Args>(args)...);
+        comp->owner = this;
         components.push_back(comp);
         return comp;
     }

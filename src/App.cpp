@@ -1,9 +1,11 @@
 #include <glad/glad.h>
 
+#include "PhysicsModule.h"
 #include "ScriptingModule.h"
 #include "Utilities/Logger.h"
 
 #include <GLFW/glfw3.h>
+#include <memory>
 
 #include "App.h"
 #include "AppSettings.h"
@@ -65,6 +67,7 @@ bool App::Initialize(const AppSettings& settings) {
 
     ModuleManager::Get().RegisterModule(std::make_unique<ScriptingModule>());
     ModuleManager::Get().RegisterModule(std::make_unique<Renderer::CameraModule>());
+    ModuleManager::Get().RegisterModule(std::make_unique<PhysicsModule>());
 
     // startup all modules
     ModuleManager::Get().StartupAll();
@@ -96,6 +99,10 @@ void App::Run() {
         ModuleManager::Get().GetModule("ScriptingModule")
     );
 
+    auto physicsModule = std::dynamic_pointer_cast<PhysicsModule>(
+        ModuleManager::Get().GetModule("PhysicsModule")
+    );
+
     if (!cameraModule) {
         Utils::Logger::Get().error("CameraModule not found or wrong type.");
         return;
@@ -103,6 +110,11 @@ void App::Run() {
 
     if (!scriptingModule) {
         Utils::Logger::Get().error("ScriptingModule not found or wrong type.");
+        return;
+    }
+
+    if (!physicsModule) {
+        Utils::Logger::Get().error("PhysicsModule not found or wrong type.");
         return;
     }
 
@@ -120,6 +132,11 @@ void App::Run() {
         accumulator += deltaTime.count();
         while (accumulator >= fixedDelta) {
             OnFixedUpdate(static_cast<float>(fixedDelta));
+
+            if (physicsModule) {
+                physicsModule->Update(fixedDelta);
+            }
+
             accumulator -= fixedDelta;
         }
 

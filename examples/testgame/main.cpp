@@ -1,5 +1,8 @@
 #include "App.h"
 #include "AppSettings.h"
+#include "Physics/RigidBody.h"
+#include "Physics/BoxCollider.h"
+#include "PhysicsModule.h"
 #include "Renderer/CameraModule.h"
 #include "ModuleManager.h"
 #include "Renderer/Skybox.h"
@@ -12,6 +15,8 @@ class TestGame : public BlueSapphire::App {
 public:
     std::shared_ptr<BlueSapphire::Renderer::CameraModule> cameraModule;
     std::shared_ptr<BlueSapphire::ScriptingModule> scriptingModule;
+    std::shared_ptr<BlueSapphire::PhysicsModule> physicsModule;
+
     std::unique_ptr<BlueSapphire::Scene> scene;
 
     std::unique_ptr<BlueSapphire::Renderer::Skybox> skybox;
@@ -102,6 +107,11 @@ public:
             BlueSapphire::ModuleManager::Get().GetModule("ScriptingModule")
         );
 
+        physicsModule = std::dynamic_pointer_cast<BlueSapphire::PhysicsModule>(
+            BlueSapphire::ModuleManager::Get().GetModule("PhysicsModule")
+        );
+
+
         if (!cameraModule) {
             std::cerr << "CameraModule not found!" << std::endl;
             return false;
@@ -111,6 +121,11 @@ public:
             std::cerr << "ScriptingModule not found!" << std::endl;
             return false;
         }
+
+        if (!physicsModule) {
+            std::cerr << "PhysicsModule not found!" << std::endl;
+            return false;
+        }        
 
         // load lua scripts
         scriptingModule->LoadScript("scripts/init.lua");
@@ -124,6 +139,12 @@ public:
         auto meshRenderer = cube->AddComponent<BlueSapphire::MeshRenderer>();
         meshRenderer->SetMesh(cubeMesh);
         meshRenderer->shader = std::shared_ptr<BlueSapphire::Renderer::Shader>(&basicShader, [](auto*){});
+
+        auto rb = cube->AddComponent<BlueSapphire::Physics::RigidBody>();
+        auto collider = cube->AddComponent<BlueSapphire::Physics::BoxCollider>(glm::vec3(1.0f));
+                
+        physicsModule->RegisterRigidBody(rb.get());
+        physicsModule->RegisterCollider(collider.get());        
 
         return true;
     }

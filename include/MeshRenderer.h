@@ -14,9 +14,9 @@ public:
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Renderer::Shader> shader;
 
-    void Update(float dt, GameObject* owner) override {}
+    void Update(float dt, GameObject* owner) {}
 
-    void Draw(const GameObject* owner, const glm::mat4& view, const glm::mat4& projection) override {
+    void Draw(const GameObject* owner, const glm::mat4& view, const glm::mat4& projection) {
         shader->Bind();
 
         glm::mat4 model = glm::translate(glm::mat4(1.0f), owner->position)
